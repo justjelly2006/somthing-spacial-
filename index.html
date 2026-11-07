@@ -1,0 +1,143 @@
+<!DOCTYPE html><html>
+<head>
+<title>Pixel Rose 🌹</title><style>
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background: #080812;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+    font-family: monospace;
+}
+
+.container {
+    text-align: center;
+}
+
+canvas {
+    width: 360px;
+    max-width: 95vw;
+    image-rendering: pixelated;
+}
+
+h2 {
+    color: #ff668b;
+    letter-spacing: 5px;
+    font-size: 20px;
+    margin-top: 10px;
+    text-shadow: 0 0 15px #ff1744;
+}
+
+p {
+    color: #aaa;
+    margin-top: 12px;
+    font-size: 12px;
+    letter-spacing: 2px;
+}
+</style></head><body><div class="container"><canvas id="rose" width="120" height="160"></canvas>
+
+<h2>FOR YOU</h2>
+<p>✦ A LITTLE FLOWER OF LOVE ✦</p></div><script>
+
+const canvas = document.getElementById("rose");
+const ctx = canvas.getContext("2d");
+
+ctx.imageSmoothingEnabled = false;
+
+let frame = 0;
+let particles = [];
+
+function pixel(x, y, color) {
+    ctx.fillStyle = color;
+    ctx.fillRect(x, y, 3, 3);
+}
+
+function drawRose() {
+
+    ctx.clearRect(0, 0, 120, 160);
+
+    // Stem
+    for(let i = 0; i < 38; i++) {
+        pixel(57 + Math.sin(i/8)*2, 78+i*2, "#287c45");
+        pixel(60 + Math.sin(i/8)*2, 78+i*2, "#45a85d");
+    }
+
+    // Left leaf
+    for(let i=0; i<9; i++) {
+        pixel(54-i*2, 103-i, "#267b43");
+        pixel(54-i*2, 106-i, "#399d50");
+    }
+
+    // Right leaf
+    for(let i=0; i<9; i++) {
+        pixel(62+i*2, 120-i, "#267b43");
+        pixel(62+i*2, 123-i, "#399d50");
+    }
+
+    // Rose bloom animation
+    let bloom = Math.min(frame/100, 1);
+
+    let petals = [
+        [48,40], [54,34], [60,34],
+        [66,40], [42,46], [72,46],
+        [48,52], [54,55], [60,55],
+        [66,52], [54,43], [60,43]
+    ];
+
+    petals.forEach(([x,y],i) => {
+
+        let scale = Math.max(0.1,bloom);
+        let px = 57+(x-57)*scale;
+        let py = 45+(y-45)*scale;
+
+        let colors = [
+            "#a90035",
+            "#e60046",
+            "#ff1744",
+            "#ff5577",
+            "#c40038"
+        ];
+
+        pixel(px,py,colors[i%colors.length]);
+        pixel(px+3,py,colors[(i+1)%colors.length]);
+        pixel(px,py+3,colors[(i+2)%colors.length]);
+
+    });
+
+    // Rose center
+    if(frame > 45) {
+        pixel(57,45,"#ffb52e");
+        pixel(60,45,"#ffcc55");
+    }
+
+    // Falling glowing particles
+    if(Math.random() < 0.15) {
+        particles.push({
+            x: Math.random()*120,
+            y: -5,
+            speed: Math.random()*0.5+0.3
+        });
+    }
+
+    particles.forEach((p,i) => {
+        p.y += p.speed;
+        pixel(p.x,p.y,"#ff8ba7");
+    });
+
+    particles = particles.filter(p => p.y < 160);
+
+    frame++;
+    requestAnimationFrame(drawRose);
+}
+
+drawRose();
+
+</script></body>
+</html>
