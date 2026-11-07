@@ -1,133 +1,118 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<title>Animated Rose</title>
-
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>A Rose For You</title>
 <style>
-
-body {
-    background: #080808;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-    overflow: hidden;
+*{box-sizing:border-box}
+body{
+  margin:0;min-height:100svh;background:#050509;color:#eee;
+  display:flex;align-items:center;justify-content:center;
+  font-family:monospace;overflow:hidden;
+  background-image:radial-gradient(ellipse at 50% 42%,#24101c 0%,#0b0810 42%,#050509 78%);
 }
-
-/* Rose container */
-
-.rose {
-    position: relative;
-    width: 200px;
-    height: 300px;
+.wrap{width:100%;padding:18px 8px;text-align:center}
+.tag{color:#8c7886;font-size:10px;letter-spacing:3px;margin-bottom:12px}
+#art{
+  display:block;margin:auto;white-space:pre;
+  font-size:clamp(5px,1.75vw,9px);line-height:1.12;
+  letter-spacing:0; font-weight:bold;
+  text-shadow:0 0 7px currentColor;
 }
-
-/* Flower */
-
-.flower {
-    position: absolute;
-    top: 30px;
-    left: 50%;
-    transform: translateX(-50%);
-}
-
-/* Petals */
-
-.petal {
-    position: absolute;
-    width: 65px;
-    height: 85px;
-    background: linear-gradient(#ff1744, #8b0000);
-    border-radius: 50% 50% 20% 20%;
-    transform-origin: bottom center;
-    animation: bloom 3s ease-in-out infinite alternate;
-}
-
-.petal:nth-child(1) {
-    transform: rotate(-60deg);
-}
-
-.petal:nth-child(2) {
-    transform: rotate(-30deg);
-}
-
-.petal:nth-child(3) {
-    transform: rotate(0deg);
-}
-
-.petal:nth-child(4) {
-    transform: rotate(30deg);
-}
-
-.petal:nth-child(5) {
-    transform: rotate(60deg);
-}
-
-/* Stem */
-
-.stem {
-    position: absolute;
-    width: 7px;
-    height: 190px;
-    background: green;
-    top: 110px;
-    left: 97px;
-}
-
-/* Leaves */
-
-.leaf {
-    position: absolute;
-    width: 55px;
-    height: 25px;
-    background: #228b22;
-    border-radius: 100% 0 100% 0;
-    top: 180px;
-}
-
-.leaf.left {
-    left: 45px;
-    transform: rotate(20deg);
-}
-
-.leaf.right {
-    right: 45px;
-    transform: rotate(160deg);
-}
-
-/* Animation */
-
-@keyframes bloom {
-    from {
-        transform: scale(0.5) rotate(0deg);
-    }
-
-    to {
-        transform: scale(1) rotate(15deg);
-    }
-}
-
+h1{font-size:clamp(17px,5vw,23px);letter-spacing:6px;color:#ff789b;
+   text-shadow:0 0 15px #e52b62;margin:18px 0 5px}
+.sub{font-size:10px;letter-spacing:2px;color:#9b8793}
+.hint{margin-top:24px;color:#655b65;font-size:10px;letter-spacing:1px}
 </style>
 </head>
-
 <body>
-
-<div class="rose">
-
-    <div class="flower">
-        <div class="petal"></div>
-        <div class="petal"></div>
-        <div class="petal"></div>
-        <div class="petal"></div>
-        <div class="petal"></div>
-    </div>
-
-    <div class="stem"></div>
-
-    <div class="leaf left"></div>
-    <div class="leaf right"></div>
-
+<div class="wrap">
+  <div class="tag">✦ A LITTLE FLOWER, MADE OF CHARACTERS ✦</div>
+  <pre id="art" aria-label="Animated ASCII rose"></pre>
+  <h1>FOR YOU</h1>
+  <div class="sub">✧ SOME THINGS BLOOM JUST FOR YOU ✧</div>
+  <div class="hint">tap anywhere to make it bloom again</div>
 </div>
-
+<script>
+const art=document.getElementById('art');
+const W=57,H=37;
+let start=performance.now(),restart=0;
+const pink=['#65102f','#9d1747','#d32961','#ff477d','#ff83a6','#ffc0d0'];
+const green=['#17452d','#21683b','#319653','#65bd78'];
+const chars=' .,:;irsXA253hMHGS#9B&@';
+const stars=[];
+for(let i=0;i<95;i++) stars.push({
+ x:Math.floor(Math.random()*W),y:Math.floor(Math.random()*H),
+ c:['·','.',':','✦','+'][Math.floor(Math.random()*5)],
+ phase:Math.random()*6.28
+});
+function frame(now){
+ let t=(now-start-restart)/1000;
+ let bloom=Math.max(0,Math.min(1,(t-0.5)/4));
+ bloom=bloom*bloom*(3-2*bloom);
+ let sway=Math.sin(t*.85)*1.2;
+ let grid=Array.from({length:H},()=>Array.from({length:W},()=>({ch:' ',color:''})));
+ function put(x,y,ch,color){
+  x=Math.round(x);y=Math.round(y);
+  if(x>=0&&x<W&&y>=0&&y<H)grid[y][x]={ch,color};
+ }
+ // Flower made from a layered, scalloped polar silhouette
+ for(let y=1;y<23;y++)for(let x=0;x<W;x++){
+  let cx=W/2+sway,cy=10.5;
+  let dx=(x-cx)/15,dy=(y-cy)/8.2;
+  let r=Math.hypot(dx,dy),a=Math.atan2(dy,dx);
+  let edge=(.76+.12*Math.cos(5*a+.4)+.07*Math.cos(9*a-1)+.035*Math.sin(13*a+t*.5))*bloom;
+  if(r<edge && bloom>.015){
+   let fold=(Math.sin(8*a+r*18+t*.3)+Math.cos(5*a-r*13))*.5;
+   let depth=1-r/Math.max(edge,.01);
+   let shade=Math.max(0,Math.min(5,Math.floor(1+depth*3+fold)));
+   let ci=Math.max(0,Math.min(chars.length-1,Math.floor(depth*19+(fold+1)*2)));
+   put(x,y,chars[ci],pink[shade]);
+  }
+ }
+ // Darker curled centre
+ if(bloom>.45){
+  for(let y=8;y<14;y++)for(let x=25;x<32;x++){
+   let r=Math.hypot(x-28.5,y-10.5);
+   if(r<3.2 && Math.sin(r*3-t)>-.3)put(x,y,['@','&','%','#'][Math.floor(r)%4],'#ff9bb5');
+  }
+ }
+ // Stem
+ for(let y=17;y<34;y++){
+  let x=W/2+sway*.45+Math.sin((y-17)/7);
+  put(x,y,'|',green[2]);put(x+1,y,'/',green[1]);
+ }
+ // Leaves
+ for(let side of [-1,1]){
+  for(let u=0;u<13;u++){
+   let x=W/2+side*(3+u)+sway*.3;
+   let mid=(side<0?25:27)+(side<0?-.23:.20)*u;
+   for(let v=-2;v<=2;v++){
+    if(Math.abs(v)<=2-u*.13){
+     put(x,mid+v,v===0?'/':(u%2?'*':':'),green[v===0?3:1]);
+    }
+   }
+  }
+ }
+ // Sparkles
+ for(const s of stars){
+  if(Math.sin(now/500+s.phase)>.88 && grid[s.y][s.x].ch===' ')
+   put(s.x,s.y,s.c,'#766477');
+ }
+ // Floating tiny petals
+ for(let k=0;k<5;k++){
+  let x=W/2+Math.sin(t*.7+k*1.7)*(17+k*2);
+  let y=4+((t*2+k*6)%31);
+  put(x,y,'✧',pink[(k+2)%pink.length]);
+ }
+ art.innerHTML=grid.map(row=>row.map(p=>p.color?
+  `<span style="color:${p.color}">${p.ch===' '?'&nbsp;':p.ch}</span>`:
+  (p.ch===' '?'&nbsp;':p.ch)).join('')).join('\n');
+ requestAnimationFrame(frame);
+}
+document.body.addEventListener('click',()=>{restart=performance.now()-start;});
+requestAnimationFrame(frame);
+</script>
 </body>
 </html>
