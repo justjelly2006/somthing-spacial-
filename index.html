@@ -1,13 +1,10 @@
-<!DOCTYPE html>
 <!DOCTYPE html><html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>A Tulip For You 🌷</title><style>
-* {
-    box-sizing: border-box;
-}
-
+* { box-sizing: border-box; }
+:root { padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }
 body {
     margin: 0;
     min-height: 100vh;
@@ -19,22 +16,8 @@ body {
     overflow: hidden;
     font-family: monospace;
 }
-
-.wrap {
-    width: 100%;
-    text-align: center;
-    padding: 12px;
-    position: relative;
-    z-index: 2;
-}
-
-.tag {
-    color: #c69bad;
-    font-size: 10px;
-    letter-spacing: 3px;
-    margin-bottom: 15px;
-}
-
+.wrap { width: 100%; text-align: center; padding: 12px; position: relative; z-index: 2; }
+.tag { color: #c69bad; font-size: 10px; letter-spacing: 3px; margin-bottom: 15px; }
 #art {
     font-size: clamp(6px, 2vw, 10px);
     line-height: 1.12;
@@ -42,21 +25,8 @@ body {
     white-space: pre;
     text-shadow: 0 0 8px currentColor;
 }
-
-h1 {
-    color: #ff85aa;
-    letter-spacing: 5px;
-    text-shadow: 0 0 15px #ed3974;
-    font-size: 23px;
-    margin-top: 18px;
-}
-
-.sub {
-    color: #d3a9ba;
-    font-size: 10px;
-    letter-spacing: 2px;
-}
-
+h1 { color: #ff85aa; letter-spacing: 5px; text-shadow: 0 0 15px #ed3974; font-size: 23px; margin-top: 18px; }
+.sub { color: #d3a9ba; font-size: 10px; letter-spacing: 2px; }
 .message {
     color: #f1c8d7;
     font-size: 11px;
@@ -66,18 +36,8 @@ h1 {
     transform: translateY(15px);
     transition: 2s;
 }
-
-.message.show {
-    opacity: 1;
-    transform: translateY(0);
-}
-
-.hint {
-    color: #92768a;
-    font-size: 10px;
-    margin-top: 18px;
-}
-
+.message.show { opacity: 1; transform: translateY(0); }
+.hint { color: #92768a; font-size: 10px; margin-top: 18px; }
 .petal {
     position: fixed;
     top: -30px;
@@ -86,17 +46,10 @@ h1 {
     animation: fall linear infinite;
     z-index: 1;
 }
-
 @keyframes fall {
-    0% {
-        transform: translateY(-10vh) rotate(0deg);
-        opacity: 0;
-    }
+    0% { transform: translateY(-10vh) rotate(0deg); opacity: 0; }
     15% { opacity: 1; }
-    100% {
-        transform: translateY(110vh) rotate(600deg);
-        opacity: 0;
-    }
+    100% { transform: translateY(110vh) rotate(600deg); opacity: 0; }
 }
 </style></head><body><div class="wrap"><div class="tag">
 ✦ A LITTLE FLOWER, MADE WITH LOVE ✦
@@ -134,242 +87,3 @@ const pink = [
 ];
 
 const green = [
-"#17452d",
-"#21683b",
-"#319653",
-"#65bd78"
-];
-
-const stars = [];
-
-for(let i=0;i<100;i++) {
-    stars.push({
-        x: Math.floor(Math.random()*W),
-        y: Math.floor(Math.random()*H),
-        ch: ["·",".","+","✦"][Math.floor(Math.random()*4)],
-        phase: Math.random()*6.28
-    });
-}
-
-function draw(now) {
-
-    let t = (now-start-restart)/1000;
-
-    let bloom = Math.max(0,Math.min(1,(t-0.5)/4));
-
-    bloom = bloom*bloom*(3-2*bloom);
-
-    if(bloom > 0.96) {
-        message.classList.add("show");
-    } else {
-        message.classList.remove("show");
-    }
-
-    let sway = Math.sin(t*0.8)*1.1;
-
-    let grid = Array.from(
-        {length:H},
-        () => Array.from({length:W},()=>({
-            ch:" ",
-            color:""
-        }))
-    );
-
-    function put(x,y,ch,color) {
-
-        x=Math.round(x);
-        y=Math.round(y);
-
-        if(x>=0 && x<W && y>=0 && y<H) {
-            grid[y][x]={ch,color};
-        }
-    }
-
-    // TULIP FLOWER
-
-    for(let y=2;y<19;y++) {
-
-        for(let x=0;x<W;x++) {
-
-            let cx=W/2+sway;
-            let dx=x-cx;
-
-            let height=(y-2)/17;
-
-            let halfWidth=(
-                2.5+
-                7*Math.sin(height*Math.PI/2)+
-                1.5*Math.sin(height*Math.PI*3)
-            )*bloom;
-
-            let leftEdge=-halfWidth;
-            let rightEdge=halfWidth;
-
-            let topCurve=(
-                1.5*Math.cos(dx*0.38)+
-                1.5
-            )*bloom;
-
-            let inside=(
-                Math.abs(dx)<halfWidth &&
-                y>2+Math.max(0,topCurve) &&
-                y<19
-            );
-
-            if(inside && bloom>0.01) {
-
-                let depth=1-Math.abs(dx)/Math.max(halfWidth,0.1);
-
-                let fold=Math.sin(dx*1.2+t*0.3)*0.5;
-
-                let shade=Math.max(
-                    0,
-                    Math.min(6,Math.floor(depth*4+fold+1))
-                );
-
-                let chars=" .,:;irsXA253hMHGS#9B&@";
-
-                let ci=Math.floor(depth*17+(fold+1)*2);
-
-                ci=Math.max(0,Math.min(chars.length-1,ci));
-
-                put(x,y,chars[ci],pink[shade]);
-            }
-        }
-    }
-
-    // PETAL DETAILS
-
-    if(bloom>0.4) {
-
-        for(let y=5;y<16;y++) {
-
-            for(let x=24;x<33;x++) {
-
-                let dx=x-28.5;
-                let dy=y-10;
-
-                if(Math.abs(dx)<3 && dy>0) {
-
-                    if(Math.sin(dx*2+t*0.3)>0) {
-
-                        put(
-                            x,y,
-                            dx===0?"@":"*",
-                            "#ffb5ca"
-                        );
-                    }
-                }
-            }
-        }
-    }
-
-    // STEM
-
-    for(let y=17;y<35;y++) {
-
-        let x=W/2+sway*0.4+Math.sin((y-17)/7);
-
-        put(x,y,"|",green[2]);
-        put(x+1,y,"/",green[1]);
-    }
-
-    // LEAVES
-
-    for(let side of [-1,1]) {
-
-        for(let u=0;u<14;u++) {
-
-            let x=W/2+side*(3+u)+sway*0.3;
-
-            let mid=(side<0?27:28)+
-                (side<0?-0.3:0.25)*u;
-
-            for(let v=-2;v<=2;v++) {
-
-                if(Math.abs(v)<=2-u*0.12) {
-
-                    put(
-                        x,
-                        mid+v,
-                        v===0?"/":(u%2?"*":":"),
-                        green[v===0?3:1]
-                    );
-                }
-            }
-        }
-    }
-
-    // STARS
-
-    for(const s of stars) {
-
-        if(
-            Math.sin(now/500+s.phase)>0.88 &&
-            grid[s.y][s.x].ch===" "
-        ) {
-            put(s.x,s.y,s.ch,"#a889aa");
-        }
-    }
-
-    // FLOATING LIGHTS
-
-    for(let k=0;k<6;k++) {
-
-        let x=W/2+
-            Math.sin(t*0.7+k*1.7)*(17+k);
-
-        let y=4+((t*2+k*6)%31);
-
-        put(x,y,"✧",pink[(k+2)%pink.length]);
-    }
-
-    // DISPLAY
-
-    art.innerHTML=grid.map(row=>
-
-        row.map(p=>{
-
-            let ch=p.ch===" "?"&nbsp;":p.ch;
-
-            return p.color
-                ? `<span style="color:${p.color}">${ch}</span>`
-                : ch;
-
-        }).join("")
-
-    ).join("\n");
-
-    requestAnimationFrame(draw);
-}
-
-// FALLING PETALS
-
-for(let i=0;i<18;i++) {
-
-    let p=document.createElement("div");
-
-    p.className="petal";
-    p.innerHTML=["✿","❀","✧","🌸"][i%4];
-
-    p.style.left=Math.random()*100+"vw";
-    p.style.animationDuration=(7+Math.random()*9)+"s";
-    p.style.animationDelay=(-Math.random()*15)+"s";
-    p.style.fontSize=(10+Math.random()*12)+"px";
-
-    document.body.appendChild(p);
-}
-
-// RESTART
-
-document.body.addEventListener("click",()=>{
-
-    restart=performance.now()-start;
-    message.classList.remove("show");
-
-});
-
-requestAnimationFrame(draw);
-
-</script></body>
-</html>
