@@ -87,3 +87,209 @@ const pink = [
 ];
 
 const green = [
+"#17452d",
+"#21683b",
+"#319653",
+"#65bd78"
+];
+
+const stars = [];
+
+for(let i=0;i<100;i++) {
+    stars.push({
+        x: Math.floor(Math.random()*W),
+        y: Math.floor(Math.random()*H),
+        ch: ["·",".","+","✦"][Math.floor(Math.random()*4)],
+        phase: Math.random()*6.28
+    });
+}
+
+function draw(now) {
+
+    let t = (now-start-restart)/1000;
+
+    let bloom = Math.max(0,Math.min(1,(t-0.5)/4));
+
+    bloom = bloom*bloom*(3-2*bloom);
+
+    if(bloom > 0.96) {
+        message.classList.add("show");
+    } else {
+        message.classList.remove("show");
+    }
+
+    let sway = Math.sin(t*0.8)*1.1;
+
+    let grid = Array.from(
+        {length:H},
+        () => Array.from({length:W},()=>({
+            ch:" ",
+            color:""
+        }))
+    );
+
+    function put(x,y,ch,color) {
+
+        x=Math.round(x);
+        y=Math.round(y);
+
+        if(x>=0 && x<W && y>=0 && y<H) {
+            grid[y][x]={ch,color};
+        }
+    }
+
+    // TULIP: rounded cup + three pointed petal tips
+
+    const cx = W/2 + sway*0.5;
+    const RIM = 7, BASE = 19;
+    const sc = 0.45 + 0.55*bloom;
+    const tips = [
+        {c:-3.8, peak:4},
+        {c:0, peak:2},
+        {c:3.8, peak:4}
+    ];
+    const chars = " .,:;irsXA253hMHGS#9B&@";
+
+    for(let y=1;y<=BASE;y++) {
+        for(let x=0;x<W;x++) {
+
+            const dx = x-cx;
+            let inside=false, u=0, v=1;
+
+            if(y>=RIM) {
+                v=(BASE-y)/(BASE-RIM);
+                let w;
+                if(v<0.55) w=9.5*Math.sqrt(Math.max(0,1-Math.pow((v-0.55)/0.55,2)));
+                else w=9.5*(1-0.25*Math.pow((v-0.55)/0.45,2));
+                w*=sc;
+                if(Math.abs(dx)<w) { inside=true; u=dx/w; }
+            } else {
+                for(const tp of tips) {
+                    const peak=RIM-(RIM-tp.peak)*(0.4+0.6*bloom);
+                    const frac=(RIM-y)/(RIM-peak);
+                    if(frac<1) {
+                        const half=3.0*sc*Math.pow(1-frac,0.7);
+                        if(Math.abs(dx-tp.c*sc)<half) {
+                            inside=true;
+                            u=dx/(7.1*sc);
+                        }
+                    }
+                }
+            }
+
+            if(inside) {
+                const light=1-Math.min(1,Math.abs(u));
+                const fold=Math.sin(dx*1.1+t*0.3)*0.4;
+                const shade=Math.max(0,Math.min(6,Math.round(light*3.2+v*1.5+fold)));
+                let ci=Math.floor(light*12+v*6+(fold+1)*2);
+                ci=Math.max(0,Math.min(chars.length-1,ci));
+
+                if(y>RIM && y<BASE-3 && Math.abs(Math.abs(dx)-3.0*sc)<0.55) {
+                    put(x,y,"|",pink[1]);
+                } else {
+                    put(x,y,chars[ci],pink[shade]);
+                }
+            }
+        }
+    }
+
+    // STEM
+
+    for(let y=BASE-1;y<36;y++) {
+        const k=(y-(BASE-1))/17;
+        const x=W/2+sway*0.5*(1-k)+Math.sin(k*2)*0.8;
+        put(x,y,"|",green[2]);
+        put(x+1,y,"|",green[1]);
+    }
+
+    // LEAVES (long, curving up from the base)
+
+    for(const side of [-1,1]) {
+        for(let s=0;s<=1.001;s+=0.02) {
+            const lx=W/2+side*(1.5+9*Math.pow(s,1.1));
+            const ly=35-9*Math.pow(s,0.75);
+            const th=1.7*Math.sin(Math.PI*Math.pow(s,0.7));
+            for(let a=-2;a<=2;a++) {
+                for(let b=-2;b<=2;b++) {
+                    if(a*a*0.5+b*b<=th*th) {
+                        const vein=(a===0&&b===0);
+                        put(lx+a,ly+b,vein?(side<0?"\\":"/"):(b%2?"*":":"),green[vein?3:1]);
+                    }
+                }
+            }
+        }
+    }
+
+    // STARS
+
+    for(const s of stars) {
+
+        if(
+            Math.sin(now/500+s.phase)>0.88 &&
+            grid[s.y][s.x].ch===" "
+        ) {
+            put(s.x,s.y,s.ch,"#a889aa");
+        }
+    }
+
+    // FLOATING LIGHTS
+
+    for(let k=0;k<6;k++) {
+
+        let x=W/2+
+            Math.sin(t*0.7+k*1.7)*(17+k);
+
+        let y=4+((t*2+k*6)%31);
+
+        put(x,y,"✧",pink[(k+2)%pink.length]);
+    }
+
+    // DISPLAY
+
+    art.innerHTML=grid.map(row=>
+
+        row.map(p=>{
+
+            let ch=p.ch===" "?"&nbsp;":p.ch;
+
+            return p.color
+                ? `<span style="color:${p.color}">${ch}</span>`
+                : ch;
+
+        }).join("")
+
+    ).join("\n");
+
+    requestAnimationFrame(draw);
+}
+
+// FALLING PETALS
+
+for(let i=0;i<18;i++) {
+
+    let p=document.createElement("div");
+
+    p.className="petal";
+    p.innerHTML=["✿","❀","✧","🌸"][i%4];
+
+    p.style.left=Math.random()*100+"vw";
+    p.style.animationDuration=(7+Math.random()*9)+"s";
+    p.style.animationDelay=(-Math.random()*15)+"s";
+    p.style.fontSize=(10+Math.random()*12)+"px";
+
+    document.body.appendChild(p);
+}
+
+// RESTART
+
+document.body.addEventListener("click",()=>{
+
+    restart=performance.now()-start;
+    message.classList.remove("show");
+
+});
+
+requestAnimationFrame(draw);
+
+</script></body>
+</html>
